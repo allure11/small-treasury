@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+// import java.util.Arrays; // Not strictly needed if not using deleteBatchIds directly on the array
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysDictType;
@@ -20,7 +21,7 @@ import com.ruoyi.system.service.ISysDictTypeService;
 
 /**
  * 字典 业务层处理
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -43,7 +44,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 根据条件分页查询字典类型
-     * 
+     *
      * @param dictType 字典类型信息
      * @return 字典类型集合信息
      */
@@ -55,7 +56,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 根据所有字典类型
-     * 
+     *
      * @return 字典类型集合信息
      */
     @Override
@@ -66,7 +67,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 根据字典类型查询字典数据
-     * 
+     *
      * @param dictType 字典类型
      * @return 字典数据集合信息
      */
@@ -89,19 +90,19 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 根据字典类型ID查询信息
-     * 
+     *
      * @param dictId 字典类型ID
      * @return 字典类型
      */
     @Override
     public SysDictType selectDictTypeById(Long dictId)
     {
-        return dictTypeMapper.selectDictTypeById(dictId);
+        return dictTypeMapper.selectById(dictId); // MyBatis-Plus
     }
 
     /**
      * 根据字典类型查询信息
-     * 
+     *
      * @param dictType 字典类型
      * @return 字典类型
      */
@@ -113,7 +114,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 批量删除字典类型信息
-     * 
+     *
      * @param dictIds 需要删除的字典ID
      */
     @Override
@@ -121,12 +122,15 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     {
         for (Long dictId : dictIds)
         {
-            SysDictType dictType = selectDictTypeById(dictId);
+            SysDictType dictType = selectDictTypeById(dictId); // Uses updated selectById
+            if (dictType == null) { // Add null check
+                continue;
+            }
             if (dictDataMapper.countDictDataByType(dictType.getDictType()) > 0)
             {
                 throw new ServiceException(String.format("%1$s已分配,不能删除", dictType.getDictName()));
             }
-            dictTypeMapper.deleteDictTypeById(dictId);
+            dictTypeMapper.deleteById(dictId); // MyBatis-Plus
             DictUtils.removeDictCache(dictType.getDictType());
         }
     }
@@ -167,14 +171,14 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 新增保存字典类型信息
-     * 
+     *
      * @param dict 字典类型信息
      * @return 结果
      */
     @Override
     public int insertDictType(SysDictType dict)
     {
-        int row = dictTypeMapper.insertDictType(dict);
+        int row = dictTypeMapper.insert(dict); // MyBatis-Plus
         if (row > 0)
         {
             DictUtils.setDictCache(dict.getDictType(), null);
@@ -184,7 +188,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 修改保存字典类型信息
-     * 
+     *
      * @param dict 字典类型信息
      * @return 结果
      */
@@ -192,9 +196,9 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @Transactional
     public int updateDictType(SysDictType dict)
     {
-        SysDictType oldDict = dictTypeMapper.selectDictTypeById(dict.getDictId());
+        SysDictType oldDict = dictTypeMapper.selectById(dict.getDictId()); // MyBatis-Plus
         dictDataMapper.updateDictDataType(oldDict.getDictType(), dict.getDictType());
-        int row = dictTypeMapper.updateDictType(dict);
+        int row = dictTypeMapper.updateById(dict); // MyBatis-Plus
         if (row > 0)
         {
             List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(dict.getDictType());
@@ -205,7 +209,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     /**
      * 校验字典类型称是否唯一
-     * 
+     *
      * @param dict 字典类型
      * @return 结果
      */

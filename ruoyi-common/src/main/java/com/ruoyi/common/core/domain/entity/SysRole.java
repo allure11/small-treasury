@@ -6,13 +6,14 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import com.baomidou.mybatisplus.annotation.TableLogic; // Added import
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.annotation.Excel.ColumnType;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
  * 角色表 sys_role
- * 
+ *
  * @author ruoyi
  */
 public class SysRole extends BaseEntity
@@ -50,6 +51,7 @@ public class SysRole extends BaseEntity
     private String status;
 
     /** 删除标志（0代表存在 2代表删除） */
+    @TableLogic(value = "0", delval = "2") // Added annotation
     private String delFlag;
 
     /** 用户是否存在此角色标识 默认不存在 */

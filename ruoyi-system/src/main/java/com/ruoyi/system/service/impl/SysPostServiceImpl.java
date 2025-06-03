@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import com.ruoyi.system.service.ISysPostService;
 
 /**
  * 岗位信息 服务层处理
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -27,7 +28,7 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 查询岗位信息集合
-     * 
+     *
      * @param post 岗位信息
      * @return 岗位信息集合
      */
@@ -39,7 +40,7 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 查询所有岗位
-     * 
+     *
      * @return 岗位列表
      */
     @Override
@@ -50,19 +51,19 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 通过岗位ID查询岗位信息
-     * 
+     *
      * @param postId 岗位ID
      * @return 角色对象信息
      */
     @Override
     public SysPost selectPostById(Long postId)
     {
-        return postMapper.selectPostById(postId);
+        return postMapper.selectById(postId); // MyBatis-Plus
     }
 
     /**
      * 根据用户ID获取岗位选择框列表
-     * 
+     *
      * @param userId 用户ID
      * @return 选中岗位ID列表
      */
@@ -74,7 +75,7 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 校验岗位名称是否唯一
-     * 
+     *
      * @param post 岗位信息
      * @return 结果
      */
@@ -92,7 +93,7 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 校验岗位编码是否唯一
-     * 
+     *
      * @param post 岗位信息
      * @return 结果
      */
@@ -110,7 +111,7 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 通过岗位ID查询岗位使用数量
-     * 
+     *
      * @param postId 岗位ID
      * @return 结果
      */
@@ -122,57 +123,72 @@ public class SysPostServiceImpl implements ISysPostService
 
     /**
      * 删除岗位信息
-     * 
+     *
      * @param postId 岗位ID
      * @return 结果
      */
     @Override
     public int deletePostById(Long postId)
     {
-        return postMapper.deletePostById(postId);
+        // Business logic check before deleting
+        SysPost post = selectPostById(postId);
+        if (post == null) { // Should not happen if called from deletePostByIds which checks first
+            return 0;
+        }
+        if (countUserPostById(postId) > 0)
+        {
+            throw new ServiceException(String.format("%1$s已分配,不能删除", post.getPostName()));
+        }
+        return postMapper.deleteById(postId); // MyBatis-Plus
     }
 
     /**
      * 批量删除岗位信息
-     * 
+     *
      * @param postIds 需要删除的岗位ID
      * @return 结果
      */
     @Override
     public int deletePostByIds(Long[] postIds)
     {
+        if (postIds == null || postIds.length == 0) {
+            return 0;
+        }
         for (Long postId : postIds)
         {
-            SysPost post = selectPostById(postId);
+            SysPost post = selectPostById(postId); // Uses updated selectById
+            if (post == null) { // If a post ID is invalid, maybe log it or handle as per requirements
+                continue;
+            }
             if (countUserPostById(postId) > 0)
             {
                 throw new ServiceException(String.format("%1$s已分配,不能删除", post.getPostName()));
             }
         }
-        return postMapper.deletePostByIds(postIds);
+        return postMapper.deleteBatchIds(Arrays.asList(postIds)); // MyBatis-Plus
     }
 
     /**
      * 新增保存岗位信息
-     * 
+     *
      * @param post 岗位信息
      * @return 结果
      */
     @Override
     public int insertPost(SysPost post)
     {
-        return postMapper.insertPost(post);
+        return postMapper.insert(post); // MyBatis-Plus
     }
 
     /**
      * 修改保存岗位信息
-     * 
+     *
      * @param post 岗位信息
      * @return 结果
      */
     @Override
     public int updatePost(SysPost post)
     {
-        return postMapper.updatePost(post);
+        return postMapper.updateById(post); // MyBatis-Plus
     }
 }

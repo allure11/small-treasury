@@ -151,7 +151,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     @Override
     public List<Long> selectMenuListByRoleId(Long roleId)
     {
-        SysRole role = roleMapper.selectRoleById(roleId);
+        SysRole role = roleMapper.selectById(roleId); // MyBatis-Plus
         return menuMapper.selectMenuListByRoleId(roleId, role.isMenuCheckStrictly());
     }
 
@@ -263,7 +263,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     @Override
     public SysMenu selectMenuById(Long menuId)
     {
-        return menuMapper.selectMenuById(menuId);
+        return menuMapper.selectById(menuId); // MyBatis-Plus
     }
 
     /**
@@ -301,7 +301,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     @Override
     public int insertMenu(SysMenu menu)
     {
-        return menuMapper.insertMenu(menu);
+        return menuMapper.insert(menu); // MyBatis-Plus
     }
 
     /**
@@ -313,7 +313,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     @Override
     public int updateMenu(SysMenu menu)
     {
-        return menuMapper.updateMenu(menu);
+        return menuMapper.updateById(menu); // MyBatis-Plus
     }
 
     /**
@@ -325,7 +325,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     @Override
     public int deleteMenuById(Long menuId)
     {
-        return menuMapper.deleteMenuById(menuId);
+        return menuMapper.deleteById(menuId); // MyBatis-Plus
     }
 
     /**

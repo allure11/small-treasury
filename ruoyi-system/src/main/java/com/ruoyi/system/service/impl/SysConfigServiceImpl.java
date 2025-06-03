@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -19,7 +20,7 @@ import com.ruoyi.system.service.ISysConfigService;
 
 /**
  * 参数配置 服务层实现
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -42,7 +43,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 查询参数配置信息
-     * 
+     *
      * @param configId 参数配置ID
      * @return 参数配置信息
      */
@@ -50,14 +51,12 @@ public class SysConfigServiceImpl implements ISysConfigService
     @DataSource(DataSourceType.MASTER)
     public SysConfig selectConfigById(Long configId)
     {
-        SysConfig config = new SysConfig();
-        config.setConfigId(configId);
-        return configMapper.selectConfig(config);
+        return configMapper.selectById(configId);
     }
 
     /**
      * 根据键名查询参数配置信息
-     * 
+     *
      * @param configKey 参数key
      * @return 参数键值
      */
@@ -71,6 +70,7 @@ public class SysConfigServiceImpl implements ISysConfigService
         }
         SysConfig config = new SysConfig();
         config.setConfigKey(configKey);
+        // 使用保留的自定义查询方法
         SysConfig retConfig = configMapper.selectConfig(config);
         if (StringUtils.isNotNull(retConfig))
         {
@@ -82,7 +82,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 获取验证码开关
-     * 
+     *
      * @return true开启，false关闭
      */
     @Override
@@ -98,26 +98,27 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 查询参数配置列表
-     * 
+     *
      * @param config 参数配置信息
      * @return 参数配置集合
      */
     @Override
     public List<SysConfig> selectConfigList(SysConfig config)
     {
+        // 使用保留的自定义查询方法
         return configMapper.selectConfigList(config);
     }
 
     /**
      * 新增参数配置
-     * 
+     *
      * @param config 参数配置信息
      * @return 结果
      */
     @Override
     public int insertConfig(SysConfig config)
     {
-        int row = configMapper.insertConfig(config);
+        int row = configMapper.insert(config);
         if (row > 0)
         {
             redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
@@ -127,20 +128,20 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 修改参数配置
-     * 
+     *
      * @param config 参数配置信息
      * @return 结果
      */
     @Override
     public int updateConfig(SysConfig config)
     {
-        SysConfig temp = configMapper.selectConfigById(config.getConfigId());
-        if (!StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
+        SysConfig temp = configMapper.selectById(config.getConfigId());
+        if (temp != null && !StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
         {
             redisCache.deleteObject(getCacheKey(temp.getConfigKey()));
         }
 
-        int row = configMapper.updateConfig(config);
+        int row = configMapper.updateById(config);
         if (row > 0)
         {
             redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
@@ -150,7 +151,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 批量删除参数信息
-     * 
+     *
      * @param configIds 需要删除的参数ID
      */
     @Override
@@ -159,11 +160,14 @@ public class SysConfigServiceImpl implements ISysConfigService
         for (Long configId : configIds)
         {
             SysConfig config = selectConfigById(configId);
+            if (config == null) { // Ensure config exists before trying to access its properties
+                continue;
+            }
             if (StringUtils.equals(UserConstants.YES, config.getConfigType()))
             {
                 throw new ServiceException(String.format("内置参数【%1$s】不能删除 ", config.getConfigKey()));
             }
-            configMapper.deleteConfigById(configId);
+            configMapper.deleteById(configId);
             redisCache.deleteObject(getCacheKey(config.getConfigKey()));
         }
     }
@@ -203,7 +207,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 校验参数键名是否唯一
-     * 
+     *
      * @param config 参数配置信息
      * @return 结果
      */
@@ -211,6 +215,7 @@ public class SysConfigServiceImpl implements ISysConfigService
     public boolean checkConfigKeyUnique(SysConfig config)
     {
         Long configId = StringUtils.isNull(config.getConfigId()) ? -1L : config.getConfigId();
+        // 使用保留的自定义查询方法
         SysConfig info = configMapper.checkConfigKeyUnique(config.getConfigKey());
         if (StringUtils.isNotNull(info) && info.getConfigId().longValue() != configId.longValue())
         {
@@ -221,7 +226,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     /**
      * 设置cache key
-     * 
+     *
      * @param configKey 参数键
      * @return 缓存键key
      */

@@ -106,11 +106,11 @@ mybatis:
   # 加载全局的配置文件
   configLocation: classpath:mybatis/mybatis-config.xml
 
-# PageHelper分页插件
-pagehelper:
-  helperDialect: mysql
-  supportMethodsArguments: true
-  params: count=countSql
+# MyBatis-Plus配置
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: assign_id
 
 # Swagger配置
 swagger:

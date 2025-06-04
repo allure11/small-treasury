@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.constraints.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import com.baomidou.mybatisplus.annotation.TableLogic; // Added import
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.annotation.Excel.ColumnType;
 import com.ruoyi.common.annotation.Excel.Type;
@@ -14,7 +15,7 @@ import com.ruoyi.common.xss.Xss;
 
 /**
  * 用户对象 sys_user
- * 
+ *
  * @author ruoyi
  */
 public class SysUser extends BaseEntity
@@ -60,6 +61,7 @@ public class SysUser extends BaseEntity
     private String status;
 
     /** 删除标志（0代表存在 2代表删除） */
+    @TableLogic(value = "0", delval = "2") // Added annotation
     private String delFlag;
 
     /** 最后登录IP */
